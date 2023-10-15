@@ -1,0 +1,15 @@
+@{
+    ViewData["Title"] = "Game Board";
+}
+
+<div class="game-board">
+    @for (int i = 0; i < 10; i++)
+    {
+        <div class="game-row">
+            @for (int j = 0; j < 10; j++)
+            {
+                <button class="game-cell" data-row="@i" data-col="@j"></button>
+            }
+        </div>
+    }
+</div>
