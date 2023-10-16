@@ -1,0 +1,48 @@
+﻿@model Cell[][]
+
+@using Milestone_Project;
+
+@{
+    Layout = null;  // If you don't want to use the default layout; remove if you want to use a layout
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Play Minesweeper</title>
+    <link rel="stylesheet" type="text/css" href="~/css/site.css">
+    <!-- Add a link to your JS file if needed -->
+    <!--<script src="~/js/site.js"></script>-->
+</head>
+<body>
+
+    <div class="game-board">
+        @foreach (var rowArray in Model)
+        {
+            foreach (var cell in rowArray)
+            {
+                <form method="post" action="/Game/CellClicked" style="display: inline;">
+                    <input type="hidden" name="row" value="@cell.Row" />
+                    <input type="hidden" name="col" value="@cell.Column" /> <!-- Updated property name to 'Column' -->
+                    <button type="submit" class="game-button">
+                        @if (cell.IsRevealed)
+                        {
+                            if (cell.IsMine)
+                            {
+                                <span class="bomb"></span> <!-- This will show a bomb image if styled correctly -->
+                            }
+                            else
+                            {
+                                @cell.LiveNeighbors  <!-- Updated property name to 'LiveNeighbors' -->
+                            }
+                        }
+                    </button>
+                </form>
+            }
+            <br /> <!-- This moves to the next row -->
+        }
+    </div>
+
+</body>
+</html>
