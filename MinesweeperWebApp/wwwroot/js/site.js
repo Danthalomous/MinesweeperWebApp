@@ -26,3 +26,4 @@ gameCells.forEach(function(cell) {
         revealCell(row, col);
     });
 });
+
