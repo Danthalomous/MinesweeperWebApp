@@ -25,7 +25,7 @@ namespace MinesweeperWebApp.Controllers
 			SecurityService securityService = new SecurityService();
 
 			if(securityService.CanRegister(user))
-				return View("RegisterSuccess", user);
+				return RedirectToAction("Gameboard", "Home");
 			else
 				return View("RegisterFailure", user);
 		}

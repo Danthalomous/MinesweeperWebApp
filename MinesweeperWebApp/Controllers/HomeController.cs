@@ -23,6 +23,11 @@ namespace MinesweeperWebApp.Controllers
 			return View();
 		}
 
+		public IActionResult Gameboard(UserModel user)
+		{
+			return View("GameBoard");
+		}
+
 		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 		public IActionResult Error()
 		{

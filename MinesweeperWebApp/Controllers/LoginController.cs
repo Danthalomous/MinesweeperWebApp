@@ -25,8 +25,8 @@ namespace MinesweeperWebApp.Controllers
 		{
 			SecurityService securityService = new SecurityService();
 
-			if(securityService.IsValid(user))
-				return View("LoginSuccess", user);
+			if (securityService.IsValid(user))
+				return RedirectToAction("Gameboard", "Home");
 			else
 				return View("LoginFailure", user);
 
