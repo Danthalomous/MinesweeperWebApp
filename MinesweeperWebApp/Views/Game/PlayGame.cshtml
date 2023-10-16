@@ -4,7 +4,6 @@
 
 @{
     Layout = null;
-    var cells = Model.Cast<Cell>().ToArray(); // Convert the 2D array to a 1D array of cells
 }
 
 <!DOCTYPE html>
@@ -17,28 +16,36 @@
 <body>
 
     <div class="game-board">
-        @foreach (var cell in cells)
+        @for (int row = 0; row < Model.GetLength(0); row++)
         {
-            <form method="post" action="/Game/CellClicked" style="display: inline;">
-                <input type="hidden" name="row" value="@cell.Row" />
-                <input type="hidden" name="col" value="@cell.Column" />
-                <button type="submit" class="game-button">
-                    @if (cell.IsRevealed)
-                    {
-                        if (cell.IsMine)
-                        {
-                            <span class="bomb"></span>
-                        }
-                        else
-                        {
-                            @cell.Neighbors
-                        }
-                    }
-                </button>
-            </form>
+            <div class="row">
+                @for (int col = 0; col < Model.GetLength(1); col++)
+                {
+                    var cell = Model[row, col];
+                    <form method="post" action="/Game/CellClicked" style="display: inline;">
+                        <input type="hidden" name="row" value="@row" />
+                        <input type="hidden" name="col" value="@col" />
+                        <button type="submit" class="game-button">
+                            @if (cell.IsRevealed)
+                            {
+                                if (cell.IsMine)
+                                {
+                                    <span class="bomb"></span>
+                                }
+                                else
+                                {
+                                    @if (cell.Visited)
+                                    {
+                                        <span>@cell.LiveNeighbors</span>
+                                    }
+                                }
+                            }
+                        </button>
+                    </form>
+                }
+            </div>
         }
     </div>
 
 </body>
 </html>
-

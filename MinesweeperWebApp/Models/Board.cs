@@ -110,6 +110,7 @@ namespace Milestone_Project
         public void floodFill(int row, int col)
         {
             Grid[row, col].Visited = true;
+            Grid[row, col].IsRevealed = true;
 
             int[] dx = { -1, 1, 0, 0 };
             int[] dy = { 0, 0, -1, 1 };
@@ -119,7 +120,7 @@ namespace Milestone_Project
                 int newRow = row + dx[i];
                 int newCol = col + dy[i];
 
-                if (IsValidPosition(newRow, newCol) && !Grid[newRow, newCol].Visited && !Grid[newRow, newCol].Live)
+                if (IsValidPosition(newRow, newCol) && !Grid[newRow, newCol].Visited && !Grid[newRow, newCol].Live && !Grid[newRow, newCol].IsRevealed)
                 {
                     floodFill(newRow, newCol);
                 }
@@ -142,6 +143,7 @@ namespace Milestone_Project
             else
             {
                 cell.Visited = true;  // Mark the cell as visited
+                cell.IsRevealed = true;
             }
 
             // TODO: Add more logic as needed
