@@ -1,13 +1,26 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
-
+    console.log("gameScript.js Loaded");
     // Bind the event listeners to the game buttons
     document.querySelectorAll('.game-button').forEach(button => {
-        button.addEventListener('click', handleButtonClick);
+        button.addEventListener('click', function (event) {
+            handleButtonClick(event, "/game/ShowOneCell");
+        });
     });
 
-    function handleButtonClick(event) {
-        const row = parseInt(event.target.getAttribute('data-row'));
-        const col = parseInt(event.target.getAttribute('data-col'));
+    /*
+    $(document).on("click", ".game-button") {
+        function("handleButtonClick") {
+
+        }
+   
+*/
+    function handleButtonClick(event, urlString) {
+        var row = event.target.getAttribute('data-row');
+        var col = event.target.getAttribute('data-col');
+        var val = $(this).val;
+        val = parseInt(val);
+
+        console.log("The button clicked's [r,c]: " + row + "," + col) + "\n" + val;
 
         const cellState = getCellState(row, col);
 
@@ -22,9 +35,24 @@
         }
 
         checkGameOver();
+
+        $.ajax({
+            type: "json",
+            method: "POST",
+            url: urlString,
+            data: {
+                "buttonNumber": val
+            },
+            success: function (data) {
+                console.log(data);
+                $("#" + val).html(data);
+            }
+        });
     }
 
     function getCellState(row, col) {
+        row = parseInt(row);
+        col = parseInt(col);
         // Mock logic: For now, let's assume every third cell is a mine
         if (row % 3 === 0 && col % 3 === 0) {
             return 'mine';
@@ -57,5 +85,4 @@
             alert('Game Over!');
         }
     }
-
 });

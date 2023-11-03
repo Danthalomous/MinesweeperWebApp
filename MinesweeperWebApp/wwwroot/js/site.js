@@ -1,3 +1,6 @@
+$(function () {
+    console.log("site.js page is ready");
+});
 // Reveal a cell based on its position and update the board
 function revealCell(row, col) {
     var cellValue = board[row][col];
@@ -18,6 +21,7 @@ function revealCell(row, col) {
 
 // Attach event listeners to game cells
 var gameCells = document.querySelectorAll('.game-cell');
+console.log("Site.js loaded");
 gameCells.forEach(function(cell) {
     cell.addEventListener('click', function(event) {
         var clickedCell = event.target;

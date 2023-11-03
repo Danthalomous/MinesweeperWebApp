@@ -1,20 +1,8 @@
 @using Milestone_Project; // Add this line at the top
 
 @model Cell[,]
-
-@{
-    Layout = null;
-}
-
-<!DOCTYPE html>
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>Play Minesweeper</title>
-    <link rel="stylesheet" type="text/css" href="~/css/site.css">
-</head>
 <body>
-
+    <p>Current Time: @DateTime.Now</p>
     <div class="game-board">
         @for (int row = 0; row < Model.GetLength(0); row++)
         {
@@ -22,15 +10,15 @@
                 @for (int col = 0; col < Model.GetLength(1); col++)
                 {
                     var cell = Model[row, col];
-                    <form method="post" action="/Game/CellClicked" style="display: inline;">
-                        <input type="hidden" name="row" value="@row" />
+                    //<form method="post" action="/Game/CellClicked" style="display: inline;">
                         <input type="hidden" name="col" value="@col" />
-                        <button type="submit" class="game-button">
+                        <input type="hidden" name="row" value="@row" />
+                        <button type="button" class="game-button" value=@col+@row data-row=@col data-col=@row>
                             @if (cell.IsRevealed)
                             {
                                 if (cell.IsMine)
                                 {
-                                    <span class="bomb"></span>
+                                    <span class="bomb">B</span>
                                 }
                                 else
                                 {
@@ -41,11 +29,10 @@
                                 }
                             }
                         </button>
-                    </form>
+                    //</form>
                 }
             </div>
         }
     </div>
 
 </body>
-</html>

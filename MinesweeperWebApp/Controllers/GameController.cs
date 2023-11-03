@@ -11,11 +11,16 @@ public class GameController : Controller
         return View(board.Grid);
     }
 
-
-    [HttpPost]
     public IActionResult CellClicked(int row, int col)
     {
         board.ProcessClick(row, col);
         return RedirectToAction("PlayGame");
+    }
+
+    [HttpPost]
+    public PartialViewResult ShowOneCell(int row, int col)
+    {
+        board.ProcessClick(row, col);
+        return PartialView("ShowOneCell", board.GetCell(row, col));
     }
 }

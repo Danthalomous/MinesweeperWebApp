@@ -1,0 +1,22 @@
+﻿@model Milestone_Project.Cell
+    var cell = Model[row, col];
+<input type="hidden" name="col" value="@Model.Column />
+<input type="hidden" name="row" value="@Model.Row" />
+<button type="button" class="game-button" value=@Model.Column+@Model.Row data-row=@Model.Column data-col=@Model.Row>
+        @if (@Model.IsRevealed)
+        {
+            if (@Model.IsMine)
+            {
+                <span class="bomb"></span>
+            }
+            else
+            {
+            @if (@Model.Visited)
+            {
+                <span>@Model.LiveNeighbors</span>
+            }
+        }
+    }
+    </button>
+
+
