@@ -1,22 +1,17 @@
-﻿@model Milestone_Project.Cell
-    var cell = Model[row, col];
-<input type="hidden" name="col" value="@Model.Column />
+@model Milestone_Project.Cell
+
+<input type="hidden" name="col" value="@Model.Column" />
 <input type="hidden" name="row" value="@Model.Row" />
-<button type="button" class="game-button" value=@Model.Column+@Model.Row data-row=@Model.Column data-col=@Model.Row>
-        @if (@Model.IsRevealed)
+<button type="button" class="game-button" data-row="@Model.Row" data-col="@Model.Column">
+    @if (Model.IsRevealed)
+    {
+        if (Model.IsMine)
         {
-            if (@Model.IsMine)
-            {
-                <span class="bomb"></span>
-            }
-            else
-            {
-            @if (@Model.Visited)
-            {
-                <span>@Model.LiveNeighbors</span>
-            }
+            <span class="mine"><img src="~/img/bomb.png" /></span>
+        }
+        else if (Model.AdjacentMines > 0)
+        {
+            <span>@Model.AdjacentMines</span>
         }
     }
-    </button>
-
-
+</button>
