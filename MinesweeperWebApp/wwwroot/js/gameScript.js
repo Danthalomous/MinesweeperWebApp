@@ -1,88 +1,113 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
     console.log("gameScript.js Loaded");
-    // Bind the event listeners to the game buttons
+    let bombCount = 0; // Keep track of the number of bombs revealed
+
+    // Attach click event listeners for left-clicks
     document.querySelectorAll('.game-button').forEach(button => {
         button.addEventListener('click', function (event) {
-            handleButtonClick(event, "/game/ShowOneCell");
+            let row = event.target.getAttribute('data-row');
+            let col = event.target.getAttribute('data-col');
+            console.log("The button clicked's [r,c]: " + row + "," + col); // Log the row and column
+            handleCellClick(row, col);
         });
     });
 
-    /*
-    $(document).on("click", ".game-button") {
-        function("handleButtonClick") {
+    // Attach contextmenu event listeners for right-clicks to place flags
+    document.querySelectorAll('.game-button').forEach(button => {
+        button.addEventListener('contextmenu', function (event) {
+            event.preventDefault(); // Prevent the context menu from appearing
+            let row = event.target.getAttribute('data-row');
+            let col = event.target.getAttribute('data-col');
+            toggleFlag(row, col);
+        });
+    });
 
+    function handleCellClick(row, col) {
+
+        let cellSelector = `[data-row="${row}"][data-col="${col}"]`;
+        let cell = document.querySelector(cellSelector);
+
+        // If the cell is already revealed or flagged, don't allow it to be clicked again
+        if (cell.classList.contains('revealed') || cell.classList.contains('flag')) {
+            return;
         }
-   
-*/
-    function handleButtonClick(event, urlString) {
-        var row = event.target.getAttribute('data-row');
-        var col = event.target.getAttribute('data-col');
-        var val = $(this).val;
-        val = parseInt(val);
-
-        console.log("The button clicked's [r,c]: " + row + "," + col) + "\n" + val;
-
-        const cellState = getCellState(row, col);
-
-        if (cellState === 'mine') {
-            event.target.classList.add('bomb');
-        } else if (cellState === 'empty') {
-            event.target.classList.add('revealed');
-            revealNeighbors(row, col);
-        } else {
-            event.target.classList.add('revealed');
-            event.target.textContent = cellState; // Assuming cellState is a number here
-        }
-
-        checkGameOver();
 
         $.ajax({
-            type: "json",
             method: "POST",
-            url: urlString,
-            data: {
-                "buttonNumber": val
+            url: "/Game/CellClicked",
+            data: { row: row, col: col },
+            success: function (response) {
+                updateCell(response);
+                if (response.isMine && response.lives <= 0) {
+                    alert('Game Over!');
+                }
             },
-            success: function (data) {
-                console.log(data);
-                $("#" + val).html(data);
+            error: function () {
+                alert('An error occurred while processing the click.');
             }
         });
     }
 
-    function getCellState(row, col) {
-        row = parseInt(row);
-        col = parseInt(col);
-        // Mock logic: For now, let's assume every third cell is a mine
-        if (row % 3 === 0 && col % 3 === 0) {
-            return 'mine';
-        } else if (row % 2 === 0) { // Every even row will return a number (just for demonstration)
-            return '2';
+    function toggleFlag(row, col) {
+        let cellSelector = `[data-row="${row}"][data-col="${col}"]`;
+        let cell = document.querySelector(cellSelector);
+
+        // Check if the cell already has a flag
+        if (cell.classList.contains('flag')) {
+            // If it does, remove the flag and update the class
+            cell.classList.remove('flag');
+            cell.innerHTML = ''; // Remove the flag image
+        } else {
+            // If it doesn't, proceed with the AJAX call to add the flag
+            $.ajax({
+                method: "POST",
+                url: "/Game/ToggleFlag",
+                data: { row: row, col: col },
+                success: function (response) {
+                    updateCell(response);
+                },
+                error: function () {
+                    alert('An error occurred while toggling the flag.');
+                }
+            });
         }
-        return 'empty';
     }
 
-    function revealNeighbors(row, col) {
-        // Mock logic: For demonstration purposes, we'll just reveal the immediate neighbors
-        let neighbors = [
-            { r: row - 1, c: col - 1 }, { r: row - 1, c: col }, { r: row - 1, c: col + 1 },
-            { r: row, c: col - 1 }, { r: row, c: col + 1 },
-            { r: row + 1, c: col - 1 }, { r: row + 1, c: col }, { r: row + 1, c: col + 1 }
-        ];
+    function updateCell(cellData) {
+        let cellSelector = `[data-row="${cellData.row}"][data-col="${cellData.col}"]`;
+        let cell = document.querySelector(cellSelector);
 
-        neighbors.forEach(neighbor => {
-            let button = document.querySelector(`[data-row="${neighbor.r}"][data-col="${neighbor.c}"]`);
-            if (button && !button.classList.contains('revealed')) {
-                button.click();
+        if (cell) {
+            if (cellData.isRevealed) {
+                if (cellData.isMine) {
+                    bombCount++; // Increment bomb count when a mine is revealed
+                    cell.classList.add('bomb');
+                    cell.innerHTML = '<img src="/img/bomb.png" alt="Bomb" />'; // Make sure this path is correct
+                    checkGameOver(); // Check if the game is over
+                } else {
+                    cell.classList.add('revealed');
+                    if (cellData.adjacentMines > 0) {
+                        cell.textContent = cellData.adjacentMines;
+                    }
+                }
             }
-        });
+
+            if (cellData.isFlagged) {
+                cell.classList.toggle('flag'); // Toggle the flag class on or off
+                cell.innerHTML = '<img src="/img/flag.png" alt="Flag" />';
+            }
+        }
     }
 
     function checkGameOver() {
-        // Mock logic: For demonstration purposes, let's just alert "Game Over" if a bomb is clicked
-        let bombs = document.querySelectorAll('.bomb');
-        if (bombs.length > 0) {
+        if (bombCount >= 3) { // Change this number to however many bombs should end the game
             alert('Game Over!');
+            // Disable further clicks on the game board
+            document.querySelectorAll('.game-button').forEach(button => {
+                button.removeEventListener('click', handleCellClick);
+                button.removeEventListener('contextmenu', toggleFlag);
+            });
         }
     }
-});
+
+}); 
