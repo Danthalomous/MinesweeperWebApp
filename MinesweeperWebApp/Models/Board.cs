@@ -4,151 +4,121 @@ namespace Milestone_Project
 {
     public class Board
     {
-        public Cell[,] Grid { get; private set; }  // Make grid publicly accessible as Grid
+        public enum Difficulty { Easy, Medium, Hard }
+
         public int Rows { get; private set; }
         public int Columns { get; private set; }
-        public double Difficulty { get; set; }
+        public Cell[,] Cells { get; private set; }
+        public int MineCount { get; private set; }
+        public int Lives { get; private set; }
 
-        public Board(double difficulty)
+        private static readonly Dictionary<Difficulty, (int rows, int cols, int mines)> DifficultySettings =
+            new Dictionary<Difficulty, (int, int, int)>
+            {
+            { Difficulty.Easy, (8, 8, 10) },
+            { Difficulty.Medium, (16, 16, 40) },
+            { Difficulty.Hard, (24, 24, 99) }
+            };
+
+        public Board(Difficulty difficulty)
         {
-            Difficulty = difficulty;
-
-            if (difficulty == 0.2)
-            {
-                Rows = 4;
-                Columns = 4;
-            }
-            else if (difficulty == 0.5)
-            {
-                Rows = 8;
-                Columns = 8;
-            }
-            else if (difficulty == 0.8)
-            {
-                Rows = 12;
-                Columns = 12;
-            }
-            else
-            {
-                Rows = 8;
-                Columns = 8;
-            }
-
-            Grid = new Cell[Rows, Columns];
-
-            for (int row = 0; row < Rows; row++)
-            {
-                for (int col = 0; col < Columns; col++)
-                {
-                    Grid[row, col] = new Cell(row, col);
-                }
-            }
-
-            SetupLiveNeighbors();
-            CalculateLiveNeighbors();
+            Lives = 3; // Initialize lives
+            (Rows, Columns, MineCount) = DifficultySettings[difficulty];
+            Cells = new Cell[Rows, Columns];
+            InitializeCells();
+            PlantMines();
+            CalculateAdjacentMines();
         }
 
-        public void SetupLiveNeighbors()
+        private void InitializeCells()
+        {
+            for (int i = 0; i < Rows; i++)
+            {
+                for (int j = 0; j < Columns; j++)
+                {
+                    Cells[i, j] = new Cell(i, j);
+                }
+            }
+        }
+
+        private void PlantMines()
         {
             Random random = new Random();
-
-            for (int row = 0; row < Rows; row++)
+            int minesPlanted = 0;
+            while (minesPlanted < MineCount)
             {
-                for (int col = 0; col < Columns; col++)
+                int row = random.Next(Rows);
+                int col = random.Next(Columns);
+                if (!Cells[row, col].IsMine)
                 {
-                    if (random.NextDouble() < Difficulty)
-                    {
-                        Grid[row, col].Live = true;
-                    }
+                    Cells[row, col].IsMine = true;
+                    minesPlanted++;
                 }
             }
         }
 
-        public void CalculateLiveNeighbors()
+        private void CalculateAdjacentMines()
         {
-            int[] dx = { -1, -1, -1, 0, 0, 1, 1, 1 };
-            int[] dy = { -1, 0, 1, -1, 1, -1, 0, 1 };
-
-            for (int row = 0; row < Rows; row++)
+            for (int i = 0; i < Rows; i++)
             {
-                for (int col = 0; col < Columns; col++)
+                for (int j = 0; j < Columns; j++)
                 {
-                    if (Grid[row, col].Live)
+                    if (!Cells[i, j].IsMine)
                     {
-                        Grid[row, col].LiveNeighbors = 9;
-                        continue;
-                    }
-
-                    int liveCount = 0;
-
-                    for (int i = 0; i < 8; i++)
-                    {
-                        int newRow = row + dx[i];
-                        int newCol = col + dy[i];
-
-                        if (IsValidPosition(newRow, newCol) && Grid[newRow, newCol].Live)
+                        int mineCount = 0;
+                        foreach (var neighbor in GetNeighbors(i, j))
                         {
-                            liveCount++;
+                            if (neighbor.IsMine)
+                            {
+                                mineCount++;
+                            }
                         }
+                        Cells[i, j].AdjacentMines = mineCount;
                     }
-
-                    Grid[row, col].LiveNeighbors = liveCount;
                 }
             }
-        }
-
-        private bool IsValidPosition(int row, int col)
-        {
-            return row >= 0 && row < Rows && col >= 0 && col < Columns;
         }
 
         public Cell GetCell(int row, int col)
         {
-            return Grid[row, col];
+            if (row >= 0 && row < Rows && col >= 0 && col < Columns)
+            {
+                return Cells[row, col];
+            }
+            return null;
         }
 
-        public void floodFill(int row, int col)
+        public Cell[] GetNeighbors(int row, int col)
         {
-            Grid[row, col].Visited = true;
-            Grid[row, col].IsRevealed = true;
+            var neighbors = new List<Cell>();
+            int[] dRow = { -1, -1, -1, 0, 1, 1, 1, 0 };
+            int[] dCol = { -1, 0, 1, 1, 1, 0, -1, -1 };
 
-            int[] dx = { -1, 1, 0, 0 };
-            int[] dy = { 0, 0, -1, 1 };
-
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 8; i++)
             {
-                int newRow = row + dx[i];
-                int newCol = col + dy[i];
-
-                if (IsValidPosition(newRow, newCol) && !Grid[newRow, newCol].Visited && !Grid[newRow, newCol].Live && !Grid[newRow, newCol].IsRevealed)
+                int newRow = row + dRow[i];
+                int newCol = col + dCol[i];
+                if (newRow >= 0 && newRow < Rows && newCol >= 0 && newCol < Columns)
                 {
-                    floodFill(newRow, newCol);
+                    neighbors.Add(Cells[newRow, newCol]);
+                }
+            }
+
+            return neighbors.ToArray();
+        }
+
+        public void RevealCell(int row, int col)
+        {
+            var cell = GetCell(row, col);
+            if (cell != null && !cell.IsRevealed)
+            {
+                cell.Reveal();
+                if (cell.IsMine)
+                {
+                    Lives--;
+                    // Additional logic for when a mine is revealed can be added here
                 }
             }
         }
-
-        public void ProcessClick(int row, int col)
-        {
-            Cell cell = Grid[row, col];
-
-            // If it's a mine
-            if (cell.Live)
-            {
-                // TODO: Handle game over or other logic
-            }
-            else if (cell.LiveNeighbors == 0)
-            {
-                floodFill(row, col);
-            }
-            else
-            {
-                cell.Visited = true;  // Mark the cell as visited
-                cell.IsRevealed = true;
-            }
-
-            // TODO: Add more logic as needed
-        }
     }
 }
-
-

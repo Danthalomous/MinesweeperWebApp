@@ -27,6 +27,15 @@ document.addEventListener("DOMContentLoaded", function () {
         let cellSelector = `[data-row="${row}"][data-col="${col}"]`;
         let cell = document.querySelector(cellSelector);
 
+        if (cell.classList.contains('bomb')) {
+            alert('Game Over! You clicked a bomb');
+            // Disable further clicks on the game board
+            document.querySelectorAll('.game-button').forEach(button => {
+                button.removeEventListener('click', handleCellClick);
+                button.removeEventListener('contextmenu', toggleFlag);
+            });
+        }
+
         // If the cell is already revealed or flagged, don't allow it to be clicked again
         if (cell.classList.contains('revealed') || cell.classList.contains('flag')) {
             return;
@@ -57,8 +66,10 @@ document.addEventListener("DOMContentLoaded", function () {
             // If it does, remove the flag and update the class
             cell.classList.remove('flag');
             cell.innerHTML = ''; // Remove the flag image
+            bombCount--;
         } else {
             // If it doesn't, proceed with the AJAX call to add the flag
+            bombCount++;
             $.ajax({
                 method: "POST",
                 url: "/Game/ToggleFlag",
@@ -76,6 +87,8 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateCell(cellData) {
         let cellSelector = `[data-row="${cellData.row}"][data-col="${cellData.col}"]`;
         let cell = document.querySelector(cellSelector);
+
+        checkGameOver();
 
         if (cell) {
             if (cellData.isRevealed) {
@@ -100,8 +113,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function checkGameOver() {
-        if (bombCount >= 3) { // Change this number to however many bombs should end the game
-            alert('Game Over!');
+        console.log(bombCount);
+        if (bombCount >= 10) { // Change this number to however many bombs should end the game
+            alert('Game Over! You win!');
             // Disable further clicks on the game board
             document.querySelectorAll('.game-button').forEach(button => {
                 button.removeEventListener('click', handleCellClick);

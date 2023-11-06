@@ -3,7 +3,7 @@
 @model Cell[,]
 <body>
     <p>Current Time: @DateTime.Now</p>
-    <div class="game-board">
+    <div class="game-board" align="center">
         @for (int row = 0; row < Model.GetLength(0); row++)
         {
             <div class="row">
@@ -14,20 +14,17 @@
                         <input type="hidden" name="col" value="@col" />
                         <input type="hidden" name="row" value="@row" />
                         <button type="button" class="game-button" value=@col+@row data-row=@col data-col=@row>
-                            @if (cell.IsRevealed)
+                        @if (@Model[row, col].IsRevealed)
+                        {
+                            if (@Model[row, col].IsMine)
                             {
-                                if (cell.IsMine)
-                                {
-                                    <span class="bomb">B</span>
-                                }
-                                else
-                                {
-                                    @if (cell.Visited)
-                                    {
-                                        <span>@cell.LiveNeighbors</span>
-                                    }
-                                }
+                                <span class="mine"><img src="~/img/bomb.png" /></span>
                             }
+                            else if (@Model[row, col].AdjacentMines > 0)
+                            {
+                                <span>@Model[row, col].AdjacentMines</span>
+                            }
+                        }
                         </button>
                     //</form>
                 }
