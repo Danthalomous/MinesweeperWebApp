@@ -1,4 +1,5 @@
-@using Milestone_Project; // Add this line at the top
+@using Milestone_Project;
+@using Newtonsoft.Json;
 
 @model Cell[,]
 <body>
@@ -31,5 +32,13 @@
             </div>
         }
     </div>
+
+    <br />
+
+    @{
+        string formattedString = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+    }
+
+    <button type="submit" class="save-button" data-date="@formattedString" data-model="@JsonConvert.SerializeObject(Model)">SAVE</button>
 
 </body>

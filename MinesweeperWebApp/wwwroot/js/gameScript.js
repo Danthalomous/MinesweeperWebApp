@@ -22,6 +22,12 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    document.querySelectorAll('.save-button').forEach(button => {
+        button.addEventListener('click', function (event) {
+            saveGameState(0, event.target.getAttribute('data-date'), event.target.getAttribute('data-model'));
+        });
+    });
+
     function handleCellClick(row, col) {
 
         let cellSelector = `[data-row="${row}"][data-col="${col}"]`;
@@ -123,5 +129,33 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     }
+
+    function saveGameState(userID, dateTime, model) {
+        console.log("In SaveGameState()");
+
+        var SaveBoardRequest = {
+            UserID: userID,
+            SavedDate: dateTime,
+            GameBoard: model
+        };
+
+        console.log(SaveBoardRequest);
+
+        $.ajax({
+            url: "/api/GameStateAPI/saveBoard",
+            type: "PUT",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(SaveBoardRequest),
+            success: function (result) {
+                // Handle success if needed
+                console.log(result);
+            },
+            error: function (error) {
+                // Handle error if needed
+                console.error("There was an error calling the API Route: " + error);
+            }
+        });
+    }
+
 
 }); 
