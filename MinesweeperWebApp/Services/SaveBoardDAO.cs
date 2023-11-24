@@ -1,4 +1,4 @@
-﻿using Milestone_Project;
+using Milestone_Project;
 using MinesweeperWebApp.Models;
 using System.Data.SqlClient;
 using System.Text.Json;
@@ -17,7 +17,7 @@ namespace MinesweeperWebApp.Services
 
             string sqlStatement = "INSERT INTO SavedState (user_id, save_date, game_state) VALUES (@userID, @saveData, @gameState)";
 
-            using(SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 SqlCommand command = new SqlCommand(sqlStatement, connection);
 
@@ -28,10 +28,10 @@ namespace MinesweeperWebApp.Services
                 try
                 {
                     connection.Open();
-                    
+
                     int rowsAffected = command.ExecuteNonQuery();
 
-                    if(rowsAffected > 0)
+                    if (rowsAffected > 0)
                         success = true;
                     else
                         success = false;
@@ -74,6 +74,61 @@ namespace MinesweeperWebApp.Services
 
             return returnThis;
         }
+
+        public SaveBoardRequest LoadBoard(int userID)
+        {
+            SaveBoardRequest savedGame = null;
+            string sqlStatement = "SELECT game_state FROM dbo.SaveState WHERE user_id = @userID";
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                SqlCommand command = new SqlCommand(sqlStatement, connection);
+                command.Parameters.Add("@userID", System.Data.SqlDbType.Int).Value = userID;
+
+                try
+                {
+                    connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        savedGame = new SaveBoardRequest(userID, DateTime.MinValue, reader["game_state"].ToString());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+
+            return savedGame;
+        }
+
+        public bool DeleteBoard(int userID)
+        {
+            bool success = false;
+            string sqlStatement = "DELETE FROM dbo.SaveState WHERE user_id = @userID";
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                SqlCommand command = new SqlCommand(sqlStatement, connection);
+                command.Parameters.Add("@userID", System.Data.SqlDbType.Int).Value = userID;
+
+                try
+                {
+                    connection.Open();
+                    int rowsAffected = command.ExecuteNonQuery();
+                    success = rowsAffected > 0;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+
+            return success;
+        }
+
 
     }
 }
