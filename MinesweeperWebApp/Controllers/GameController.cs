@@ -74,6 +74,11 @@ namespace MinesweeperWebApp.Controllers
             return PartialView("ShowOneCell", cell);
         }
 
+        public IActionResult LoadSavedGame()
+        {
+            return View();
+        }
+
 
     }
 }
